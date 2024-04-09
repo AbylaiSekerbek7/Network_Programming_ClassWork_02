@@ -1,0 +1,11 @@
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\bin\Debug\ClassWork_02.exe.config
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\bin\Debug\ClassWork_02.exe
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\bin\Debug\ClassWork_02.pdb
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.csproj.AssemblyReference.cache
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.csproj.SuggestedBindingRedirects.cache
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.Form1.resources
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.Properties.Resources.resources
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.csproj.GenerateResource.cache
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.csproj.CoreCompileInputs.cache
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.exe
+Z:\NET\NET_ClassWorks\ClassWork_02\ClassWork_02\obj\Debug\ClassWork_02.pdb
