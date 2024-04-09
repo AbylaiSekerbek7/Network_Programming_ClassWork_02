@@ -10,7 +10,6 @@ using System.Windows.Forms;
 using System.Net;
 using System.Threading;
 using System.Net.Sockets;
-using System.Net.WebSockets;
 
 namespace ClassWork_02
 {
@@ -67,7 +66,19 @@ namespace ClassWork_02
             }
             else
             {
-                btnStart.Text = "Start";
+                // Stop server
+            }
+        }
+
+        private void OutLog(string msg)
+        {
+            if (txtJournal.InvokeRequired)
+            {
+                txtJournal.Invoke(new Action(() => { }));
+            }
+            else
+            {
+                txtJournal.Text += msg + "\r\n";
             }
         }
 
@@ -80,20 +91,141 @@ namespace ClassWork_02
                 IPEndPoint ipep = new IPEndPoint(form.ipServer, form.portServer);
                 form.socServer.Bind(ipep);
                 form.socServer.Listen(100);
+                OutLog($"Server is Started by address {form.socServer.LocalEndPoint}");
+                form.Invoke(new Action(() =>
+                {
+                    btnStart.Enabled = true;
+                    btnStart.Text = "Stop";
+                }));
                 while (true)
                 {
+                    OutLog("Waiting client connection...");
                     Socket client = form.socServer.Accept();
+                    OutLog("Client is connected");
                     // Start Thread for clients
+                    ThreadPool.QueueUserWorkItem(
+                      new WaitCallback((par) =>
+                      {
+                          ClientRoutine(par, client);
+                      }
+                    ), this);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                OutLog("Error - " + ex.Message);
+            }
+            finally
+            {
+                form.Invoke(new Action(() =>
+                {
+                    btnStart.Enabled = true;
+                    btnStart.Text = "Start";
+                }));
+                if (socServer != null)
+                {
+                    socServer.Close();
+                    socServer = null;
+                }
+            }
+        }
+
+        private void ClientRoutine(object param, Socket client)
+        {
+            Form1 form = param as Form1;
+            byte[] buffer = new byte[4*1024];
+            string msg, command, nickName;
+            try
+            {
+                OutLog($"Client : {client.RemoteEndPoint}");
+                // Протокол взаимодействия сервера с клиентом:
+                
+                // 1) ==> "Hello!"
+                client.Send(Encoding.UTF8.GetBytes("Hello!"));
+                
+                // 2) NickName <== from Client
+                int size = client.Receive(buffer);
+                msg = Encoding.UTF8.GetString(buffer, 0, size);
+                nickName = msg;
+                OutLog("NickName : " + msg);
+                lstClients.Add(new Client{
+                    client = client,
+                    cntMsg = 0,
+                    NickName = msg
+                });
+                // UpdateClientList(); обновить список клиентов на экране
+                
+                while(true)
+                {
+                    // 3 - ждем команду от клиента
+                    size = client.Receive(buffer);
+                    command = Encoding.UTF8.GetString(buffer, 0, size);
+                    OutLog("From client get command: " + command);
+                    switch (command)
+                    {
+                        case "GetUserList":
+                            msg = "";
+                            foreach (var cl in lstClients)
+                            {
+                                msg += cl.NickName + ";";
+                            }
+                            client.Send(Encoding.UTF8.GetBytes(msg));
+                            OutLog("Sent a msg: " + msg);
+                            break;
+
+                        case "SendAllUsers":
+                            size = client.Receive(buffer);
+                            msg = Encoding.UTF8.GetString(buffer, 0, size);
+                            OutLog(msg);
+                            int cnt = 0;
+                            foreach (var cl in lstClients)
+                            {
+                                if (cl.NickName == nickName) continue;
+                                //cl.client.Send(Encoding.UTF8.GetBytes(msg));
+                                cl.client.Send(buffer, 0, size, SocketFlags.None);
+                                cnt++;
+                            }
+                            client.Send(Encoding.UTF8.GetBytes(cnt.ToString()));
+                            OutLog($"Sent {cnt} msgs to clients");
+                            break;
+
+                        case "SendUser":
+                            break;
+
+                        case "ChangeNickName":
+                            break;
+
+                        case "SendFileAll":
+                            break;
+                    } // switch(command)
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error - " + ex.Message, "Error");
-                return;
+                OutLog("Error - " + ex.Message);
             }
             finally
             {
 
+            }
+        }
+
+        // Список подключенных клиентов 
+        public List<Client> lstClients = new List<Client>();
+        // Class описания клиента 
+        public class Client
+        {
+            public Socket client; // client socket
+            public string NickName; // client name
+            public int cntMsg;
+
+            public Client() { }
+            public Client(Socket client, string nickName, int cntMsg)
+            {
+                this.client = client;
+                NickName = nickName;
+                this.cntMsg = cntMsg;
             }
         }
     }
